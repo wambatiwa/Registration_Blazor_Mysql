@@ -2,6 +2,28 @@
 
 public class Helper
 {
+ private static readonly List<Student> students = new List<Student>
+  {
+        new Student
+        {
+            FirstName = "Janvier",
+            LastName = "Wamba",
+            Type = "Full Time"
+        },
+        new Student
+        {
+            FirstName = "Christian",
+            LastName = "Tsafack",
+            Type = "Part Time"
+        },
+        new Student
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Type = "Coop"
+        }
+  };
+
   public static List<Course> GetCourses ()
   {
     List<Course> courses = [];
@@ -67,5 +89,9 @@ public class Helper
 
   public static List<string> GetStudentTypes () {
     return ["Full Time", "Part Time", "Coop"];
+  }
+  public static List<Student> GetStudents()
+  {
+    return students;
   }
 }

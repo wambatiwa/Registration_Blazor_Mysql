@@ -1,0 +1,51 @@
+﻿@page "/add"
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+<PageTitle> Add Student</PageTitle>
+
+<h2 class="text-center mt-3">Add Student</h2>
+<EditForm 
+Model="student" 
+FormName="Students"
+OnSubmit="AddOne"
+class="border bg-light border-secondary-subtle  p-4 mt-3">
+    <div class="form-group mb-3 ">
+        <label for="FirstName">First Name : </label>
+        <InputText class="form-control" id="FirstName" @bind-Value="student.FirstName"  />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="lastName">Last Name : </label>
+      <InputText class="form-control" id="lastName" @bind-Value="student.LastName" />
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="FirstName">Type : </label>
+    <InputSelect class="form-control" id="type" TValue="string" @bind-Value="student.Type">
+        <option value="@types[0]">@types[0]</option>
+        <option value="@types[1]">@types[1]</option>
+        <option value="@types[2]">@types[2]</option>
+    </InputSelect>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary me-2">Add Student</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </div>
+
+</EditForm>
+
+@code {
+  private List<string> types = Helper. GetStudentTypes ();
+  
+  [SupplyParameterFromForm]
+  private Student student{get;set;} = new();
+  private void Cancel()
+  {
+    NavigationManager.NavigateTo("/");
+  }
+  private void AddOne()
+  {
+    
+  }
+}

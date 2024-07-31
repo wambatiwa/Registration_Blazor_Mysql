@@ -1,0 +1,48 @@
+﻿@page "/register/{Id:int}"
+@inject NavigationManager Navigation
+
+<PageTitle>Register Student</PageTitle>
+
+<h2 class="mb-4 text-center bg-primary-subtle">Register Student</h2>
+
+<h3 class="mt-4 link-primary">@student!.FirstName - @student.Id</h3>
+@foreach(var course in courses)
+{
+    <div class="input-group mb-3 p-2 mx-4 border border-secondary-subtle ">
+        <div class="input-group-text mx-2">
+            <input type="checkbox" class="form-check-input">
+        </div>
+        <span>@course.ToString()</span>
+    </div>
+}
+    <div class="form-group mx-4">
+        <button type="submit" class="btn btn-primary me-2">Register Student</button>
+        <button type="button" class="btn btn-secondary" @onclick="BackToStudent">Cancel</button>
+    </div>
+
+
+
+
+@code {
+    [Parameter]
+    public int Id {get;set;}
+    private List<Course> courses = Helper.GetCourses();
+    private List<Student> students = Helper.GetStudents();
+    
+
+    
+    private Student? student;
+
+    protected override void OnInitialized()
+    {
+        student = students.FirstOrDefault(s => s.Id == Id);
+        if(student == null)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+    private void BackToStudent()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

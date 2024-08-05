@@ -1,10 +1,10 @@
 ﻿@page "/register/{Id:int}"
 @inject NavigationManager Navigation
+@rendermode InteractiveServer
 
 <PageTitle>Register Student</PageTitle>
-
-<h2 class="mb-4 text-center bg-primary-subtle">Register Student</h2>
-<p>@sucess</p>
+<Heading Name="Register Student" Styles="mb-4 text-center bg-primary-subtle"/>
+@* <p>@sucess</p> *@
 
 <h3 class="mt-4 link-primary">@student!.FirstName - @student.Id</h3>
 @foreach(var course in courses)
@@ -17,7 +17,7 @@
     </div>
 }
 <div class="form-group mx-4">
-    <button type="submit" class="btn btn-primary me-2" >Register Student</button>
+    <button type="submit" @onclick="BackToStudent" class="btn btn-primary me-2" >Register Student</button>
     <a  class="btn btn-secondary "href="/">Cancel</a>
 </div>
 

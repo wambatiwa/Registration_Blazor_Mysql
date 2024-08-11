@@ -1,5 +1,6 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@inject IConfiguration config
 
 <PageTitle> All Students</PageTitle>
 <div class="d-flex justify-content-between">
@@ -20,21 +21,54 @@
         </tr>
     </thead>
     <tbody >
-        @foreach(var student in students)
+        @foreach(var student in dbStudents)
         {
             <tr>
                 <td>@student.Id</td>
                 <td>@student.FirstName</td>
                 <td>@student.LastName</td>
                 <td>@student.Type</td>
-                <td><a  @onclick:preventDefault="true" href="/register/@student.Id">Register</a></td>
+                <td><a  href="/register/@student.Id">Register</a></td>
             </tr>
         }
     </tbody>
 
 </table>
+<p>@test.FirstName</p>
+
 
 
 @code {
-    List<Student> students = Helper.GetStudents();    
+    private List<Student> dbStudents = [];
+    private int idTest;
+    private Student test = new();
+    private DataService? ds;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ds = new(config.GetConnectionString("default")!);
+        dbStudents = await GetStudentsAsync();
+        idTest = dbStudents[1].Id;
+        @* Console.WriteLine(idTest); *@
+        var result = await GetStudentAsync(idTest);
+        test  = result;
+
+    }
+
+    private async Task<List<Student>> GetStudentsAsync()
+    {
+        var sql = "SELECT * FROM Student";
+        return await ds!.LoadData<Student,dynamic>(sql,new{});
+    }
+
+    private async Task<List<Course>> GetCoursesAsync()
+    {
+        var sql = "SELECT * FROM Course";
+        return await ds!.LoadData<Course,dynamic>(sql,new{});
+    }
+     private async Task<Student> GetStudentAsync(int id)
+    {
+        var sql = "SELECT * FROM student WHERE Id = @Id";
+        return await ds!.LoadSingleData<Student,dynamic>(sql,new{Id = id });
+    }
 }

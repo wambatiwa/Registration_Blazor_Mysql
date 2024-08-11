@@ -1,5 +1,7 @@
 ﻿
 
+using Registrar.Models;
+
 namespace Registrar;
 
 public class Student
@@ -13,5 +15,6 @@ public class Student
   
     public string? Type { get; set; }
     public List<Course> Courses { get; set; } = new List<Course>();
+     public List<CheckBoxItem> MyCourses {get;set;} = [];
   
 }

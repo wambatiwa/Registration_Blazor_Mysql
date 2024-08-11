@@ -1,5 +1,6 @@
 ﻿@page "/add"
 @rendermode InteractiveServer
+@inject IConfiguration config
 @inject NavigationManager NavigationManager
 
 <PageTitle> Add Student</PageTitle>
@@ -39,12 +40,33 @@ class="border bg-light border-secondary-subtle  p-4 mt-3">
   
   [SupplyParameterFromForm]
   private Student student{get;set;} = new();
+  private DataService? ds;
+
+  protected override async Task OnInitializedAsync()
+  {
+    ds = new(config.GetConnectionString("default")!);
+  }
+
+  private async Task CreateStudentAsync()
+  {
+    var sql = " INSERT INTO Student(Id,FirstName,LastName,Type) VALUES (@Id,@FirstName,@LastName,@Type)";
+    await ds!.SaveData(sql,new{ 
+      Id = new Random().Next(100000,900000),
+      FirstName = student.FirstName,
+      LastName = student.LastName,
+      Type = student.Type
+      });
+    student = new();
+  }
   private void Cancel()
   {
     NavigationManager.NavigateTo("/");
   }
-  private void AddOne()
+  private async void AddOne()
   {
-    
+    await CreateStudentAsync();
+
+    NavigationManager.NavigateTo("/");
+
   }
 }

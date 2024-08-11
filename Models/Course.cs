@@ -1,4 +1,6 @@
-﻿namespace Registrar;
+﻿using Registrar.Models;
+
+namespace Registrar;
 
 public class Course
 {
@@ -6,6 +8,7 @@ public class Course
   public string Title { get; set; } = "";
   public int WeeklyHours { get; set; }
   public bool isEnrolled { get; set; } = false;
+ 
 
   public override string ToString()
   {

@@ -1,10 +1,12 @@
-﻿@page "/register/{Id:int}"
+﻿@page "/register/{StudentId:int}"
 @inject NavigationManager Navigation
+@inject IConfiguration config
 @rendermode InteractiveServer
 
 <PageTitle>Register Student</PageTitle>
 <Heading Name="Register Student" Styles="mb-4 text-center bg-primary-subtle"/>
-@* <p>@sucess</p> *@
+
+<p></p>
 
 <h3 class="mt-4 link-primary">@student!.FirstName - @student.Id</h3>
 @foreach(var course in courses)
@@ -17,28 +19,29 @@
     </div>
 }
 <div class="form-group mx-4">
-    <button type="submit" @onclick="BackToStudent" class="btn btn-primary me-2" >Register Student</button>
+    <button type="submit" class="btn btn-primary me-2" >Register Student</button>
     <a  class="btn btn-secondary "href="/">Cancel</a>
 </div>
 
 
-
+<p></p>
 
 
 @code {
+    
     [Parameter]
-    public int Id {get;set;}
-    private List<Course> courses = Helper.GetCourses();
+    public int StudentId {get;set;}
+    @* private List<Course> courses = Helper.GetCourses();
     private List<Student> students = Helper.GetStudents();
     public string sucess = "hello";
     private void BackToStudent()
     {
         sucess ="Button well Clicked";
-    }
+    } *@
     
 
     
-    private Student? student;
+    @* private Student? student;
 
     protected override void OnInitialized()
     {
@@ -47,6 +50,29 @@
         {
             Navigation.NavigateTo("/");
         }
+    } *@
+    private DataService? ds;
+    private List<Course> courses = [];
+    private Student student = new();
+    private async Task<List<Course>> GetCoursesAsync()
+    {
+        var sql = "SELECT * FROM Course";
+        return await ds!.LoadData<Course,dynamic>(sql,new{});
+    }
+    
+    private async Task<Student> GetStudentAsync(int id)
+    {
+        var sql = "SELECT * FROM Student WHERE Id = @Id";
+        return await ds!.LoadSingleData<Student,dynamic>(sql,new{Id = id });
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        ds = new(config.GetConnectionString("default")!);
+        student = await GetStudentAsync(StudentId);
+        ds = new(config.GetConnectionString("default")!);
+        courses = await GetCoursesAsync();
+
+        Console.WriteLine(courses[0]);
     }
 
 }

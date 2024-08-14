@@ -9,17 +9,17 @@
 <p></p>
 
 <h3 class="mt-4 link-primary">@student!.FirstName - @student.Id</h3>
-@foreach(var course in courses)
+@foreach(var course in student.MyCourses)
 {
     <div class="input-group mb-3 p-2 mx-4 border border-secondary-subtle ">
         <div class="input-group-text mx-2">
-            <input type="checkbox" class="form-check-input">
+            <InputCheckbox type="checkbox" @bind-Value="course.IsChecked" class="form-check-input" id="course.Value"/>
         </div>
-        <span>@course.ToString()</span>
+        <span>@course.Text</span>
     </div>
 }
 <div class="form-group mx-4">
-    <button type="submit" class="btn btn-primary me-2" >Register Student</button>
+    <button type="submit" class="btn btn-primary me-2" @onclick = "RegisterStudent" >Register Student</button>
     <a  class="btn btn-secondary "href="/">Cancel</a>
 </div>
 
@@ -54,10 +54,17 @@
     private DataService? ds;
     private List<Course> courses = [];
     private Student student = new();
+    private List<int> idList = [];
     private async Task<List<Course>> GetCoursesAsync()
     {
         var sql = "SELECT * FROM Course";
         return await ds!.LoadData<Course,dynamic>(sql,new{});
+    }
+
+    private async Task<List<int>> GetSelectedCoursesId(int studentId)
+    {
+        var sql = "SELECT CourseId FROM Registration WHERE StudentId = @Id";
+        return await ds!.LoadData<int,dynamic>(sql,new{Id = studentId});
     }
     
     private async Task<Student> GetStudentAsync(int id)
@@ -71,8 +78,58 @@
         student = await GetStudentAsync(StudentId);
         ds = new(config.GetConnectionString("default")!);
         courses = await GetCoursesAsync();
+        foreach(var c in courses)
+        {
+            student.MyCourses.Add(new CheckBoxItem{
+                Text = c.ToString(),
+                Value = c.Id,
+                IsChecked = false
+            });
+        }
+        idList = await GetSelectedCoursesId(StudentId);
+        checkExistingCourses();
+    }
 
-        Console.WriteLine(courses[0]);
+    private List<int> getSelectedCourses() 
+    {
+        List<int> selectedCourse = [];
+        foreach(var c in student.MyCourses)
+        {
+            if(c.IsChecked)
+            {
+                selectedCourse.Add(c.Value);
+            }
+        }
+        return selectedCourse;
+    }
+
+    private void checkExistingCourses()
+    {
+        foreach(var c in student.MyCourses)
+        {
+            int course = c.Value;
+            if(idList.Contains(course))
+            {
+                c.IsChecked = !c.IsChecked;
+            }
+        }
+    }
+
+    private async Task registerStudentAsync(int studentId, int courseId)
+    {
+        var sql = "INSERT INTO Registration(StudentId,CourseId) VALUES(@CourseId,@StudentId)";
+        await ds!.SaveData(sql,new{courseId = courseId, StudentId = studentId});
+        Console.WriteLine("Registration successfull");
+    }
+
+    private void RegisterStudent()
+    {
+        List<int> selectedCourse = [];
+        selectedCourse = getSelectedCourses();
+        foreach(var c in selectedCourse)
+        {
+            Console.WriteLine(c);
+        }
     }
 
 }

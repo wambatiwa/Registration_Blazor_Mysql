@@ -9,6 +9,7 @@
 <p></p>
 
 <h3 class="mt-4 link-primary">@student!.FirstName - @student.Id</h3>
+<p>The Following Courses are available for registration:</p>
 @foreach(var course in student.MyCourses)
 {
     <div class="input-group mb-3 p-2 mx-4 border border-secondary-subtle ">
@@ -117,19 +118,21 @@
 
     private async Task registerStudentAsync(int studentId, int courseId)
     {
-        var sql = "INSERT INTO Registration(StudentId,CourseId) VALUES(@CourseId,@StudentId)";
-        await ds!.SaveData(sql,new{courseId = courseId, StudentId = studentId});
+        var sql = "INSERT INTO Registration(StudentId,CourseId) VALUES(@StudentId,@CourseId)";
+        await ds!.SaveData(sql,new{StudentId = studentId, courseId = courseId });
         Console.WriteLine("Registration successfull");
     }
 
-    private void RegisterStudent()
+    private async Task RegisterStudent()
     {
-        List<int> selectedCourse = [];
-        selectedCourse = getSelectedCourses();
-        foreach(var c in selectedCourse)
+        foreach(var c in student.MyCourses)
         {
-            Console.WriteLine(c);
+            if(c.IsChecked)
+            {
+                await registerStudentAsync(student.Id,c.Value);
+            }
         }
+        Navigation.NavigateTo("/");
     }
 
 }

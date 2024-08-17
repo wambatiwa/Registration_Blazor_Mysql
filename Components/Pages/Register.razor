@@ -56,6 +56,7 @@
     private List<Course> courses = [];
     private Student student = new();
     private List<int> idList = [];
+    private CustomValidation? customValidation;
     private async Task<List<Course>> GetCoursesAsync()
     {
         var sql = "SELECT * FROM Course";
@@ -67,7 +68,12 @@
         var sql = "SELECT CourseId FROM Registration WHERE StudentId = @Id";
         return await ds!.LoadData<int,dynamic>(sql,new{Id = studentId});
     }
-    
+
+    private async Task<List<int>> GetSelectedHours(int courseId)
+    {
+        var sql = "SELECT WeeklyHours FROM Course WHERE Id = @Id";
+        return await ds!.LoadData<int, dynamic>(sql, new { Id = courseId });
+    }
     private async Task<Student> GetStudentAsync(int id)
     {
         var sql = "SELECT * FROM Student WHERE Id = @Id";
@@ -104,6 +110,21 @@
         return selectedCourse;
     }
 
+    private async Task<int> getWeeklyHours()
+    {
+        int total;
+        List<int> listHours = [];
+        foreach(var c in student.MyCourses)
+        {
+            if(c.IsChecked)
+            {
+                listHours = await GetSelectedHours(c.Value);
+            }
+        }
+        total = listHours.Sum();
+        return total;
+    }
+
     private void checkExistingCourses()
     {
         foreach(var c in student.MyCourses)
@@ -133,6 +154,45 @@
             }
         }
         Navigation.NavigateTo("/");
+    }
+
+    private async Task CustomValidation()
+    {
+        customValidation?.ClearErrors();
+        var errors = new Dictionary<string,List<string>>();
+        List<int> selectedCourses = getSelectedCourses();
+        int totalHours = await getWeeklyHours();
+        int totalCourses = selectedCourses.Count();
+
+        switch(student.Type)
+        {
+            case "Full Time":
+                if(totalHours > 16)
+                {
+                    errors.Add(nameof(student.Type), new() {"Full Time students can only register for a maximum of 16 hours per week"});
+                }
+                break;
+            case "Part Time":
+                if (totalCourses > 3)
+                {
+                    errors.Add(nameof(student.Type), new() { "Part Time students can only register for a maximum of 3 courses" });
+                }
+                break;
+            case "Coop":
+                if (totalCourses > 2 || totalHours > 4)
+                {
+                    errors.Add(nameof(student.Type), new() { "Coop students can only register for a maximum of 2 courses and a maximum of 4 hours per week" });
+                }
+                break;
+        }
+        if(errors.Any())
+        {
+            customValidation?.DisplayErrors(errors);
+        }
+        else
+        {
+            await RegisterStudent();
+        }
     }
 
 }

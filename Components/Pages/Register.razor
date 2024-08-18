@@ -10,19 +10,26 @@
 
 <h3 class="mt-4 link-primary">@student!.FirstName - @student.Id</h3>
 <p>The Following Courses are available for registration:</p>
-@foreach(var course in student.MyCourses)
-{
-    <div class="input-group mb-3 p-2 mx-4 border border-secondary-subtle ">
-        <div class="input-group-text mx-2">
-            <InputCheckbox type="checkbox" @bind-Value="course.IsChecked" class="form-check-input" id="course.Value"/>
+<EditForm Model="checkBoxCourses" FormName="registration" OnValidSubmit="CustomValidation">
+    <CustomValidation @ref="customValidation"/>
+     <ValidationSummary/>
+     @foreach(var course in checkBoxCourses)
+    {
+        <div class="input-group mb-3 p-2 mx-4 border border-secondary-subtle ">
+            <div class="input-group-text mx-2">
+                <InputCheckbox type="checkbox" @bind-Value="course.IsChecked" class="form-check-input" id="course.Value"/>
+            </div>
+            <span>@course.Text</span>
         </div>
-        <span>@course.Text</span>
+    }
+    <div class="form-group mx-4">
+        <button type="submit" class="btn btn-primary me-2">Register Student</button>
+        <a  class="btn btn-secondary "href="/">Cancel</a>
     </div>
-}
-<div class="form-group mx-4">
-    <button type="submit" class="btn btn-primary me-2" @onclick = "RegisterStudent" >Register Student</button>
-    <a  class="btn btn-secondary "href="/">Cancel</a>
-</div>
+</EditForm>
+ 
+
+
 
 
 <p></p>
@@ -32,28 +39,13 @@
     
     [Parameter]
     public int StudentId {get;set;}
-    @* private List<Course> courses = Helper.GetCourses();
-    private List<Student> students = Helper.GetStudents();
-    public string sucess = "hello";
-    private void BackToStudent()
-    {
-        sucess ="Button well Clicked";
-    } *@
-    
-
-    
-    @* private Student? student;
-
-    protected override void OnInitialized()
-    {
-        student = students.FirstOrDefault(s => s.Id == Id);
-        if(student == null)
-        {
-            Navigation.NavigateTo("/");
-        }
-    } *@
     private DataService? ds;
+    private bool success = false;
+    private string successMessage = "";
     private List<Course> courses = [];
+
+    [SupplyParameterFromForm]
+    private List<CheckBoxItem> checkBoxCourses {get;set;} = new();
     private Student student = new();
     private List<int> idList = [];
     private CustomValidation? customValidation;
@@ -93,6 +85,7 @@
                 IsChecked = false
             });
         }
+        checkBoxCourses = student.MyCourses;
         idList = await GetSelectedCoursesId(StudentId);
         checkExistingCourses();
     }
@@ -112,7 +105,7 @@
 
     private async Task<int> getWeeklyHours()
     {
-        int total;
+        
         List<int> listHours = [];
         foreach(var c in student.MyCourses)
         {
@@ -121,7 +114,7 @@
                 listHours = await GetSelectedHours(c.Value);
             }
         }
-        total = listHours.Sum();
+        int total = listHours.Aggregate((result,next) => result+next) ;
         return total;
     }
 
@@ -141,7 +134,6 @@
     {
         var sql = "INSERT INTO Registration(StudentId,CourseId) VALUES(@StudentId,@CourseId)";
         await ds!.SaveData(sql,new{StudentId = studentId, courseId = courseId });
-        Console.WriteLine("Registration successfull");
     }
 
     private async Task RegisterStudent()
@@ -153,7 +145,7 @@
                 await registerStudentAsync(student.Id,c.Value);
             }
         }
-        Navigation.NavigateTo("/");
+      
     }
 
     private async Task CustomValidation()
@@ -163,6 +155,7 @@
         List<int> selectedCourses = getSelectedCourses();
         int totalHours = await getWeeklyHours();
         int totalCourses = selectedCourses.Count();
+        Console.WriteLine(totalHours);
 
         switch(student.Type)
         {
@@ -192,7 +185,11 @@
         else
         {
             await RegisterStudent();
+            success = true;
+            successMessage = $"The student has been registered for {totalCourses} course(s)";
+            Navigation.NavigateTo("/");
         }
+
     }
 
 }
